@@ -1,6 +1,7 @@
 import flask 
 from flask import request, jsonify
 from flask_pymongo import PyMongo
+from werkzeug.datastructures import auth_property
 
 import controller.user as user
 import re
@@ -26,8 +27,7 @@ def home():
 
 @app.route('/v0/signup', methods=['POST'])
 def register():    
-    data = request.get_json()  
-    print(data)  
+    data = request.get_json()    
     if (not "email" in data) or (not re.search(regex, data["email"])) :
         return jsonify(status = 500, 
         msg = "Please enter a valid email" )    
@@ -59,6 +59,19 @@ def login():
     password = data["password"]
     return user.login(email, password, mongo)
 
+@app.route('/v0/get_list_group', methods=['GET'])
+def get_list_group():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return user.getListGroup(auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
 @app.route('/v0/add_groups', methods=['POST'])
 def add_groups():
     data = request.get_json()
@@ -70,9 +83,14 @@ def add_groups():
         if isinstance(auth, dict) :
             return jsonify(status = auth["status"], 
                 msg = auth["msg"])
-        return jsonify(status = 200, 
-                msg = "hello" )
+        email = data["email"]
+        name_group = data["name"]
+        return user.addGroup(email, name_group, auth, mongo)
+        # print(auth)
+        # return jsonify(status = 500, 
+        #     msg = "Please enter a valid password." )
     except Exception as e:
+        print(e)
         return jsonify(status = 500, 
                 error = e )
 app.run()
