@@ -44,4 +44,17 @@ def register():
     role = data["role"]
     return user.sign_up(name, email, password, role, mongo)
 
+@app.route('/v0/login', methods=['POST'])
+def login():
+    data = request.get_json()   
+    if (not "email" in data) or (not re.search(regex, data["email"])) :
+        return jsonify(status = 500, 
+        msg = "Please enter a valid email" )    
+    if not "password" in data :
+        return jsonify(status = 500, 
+        msg = "Please enter a valid password." )
+    email = data ["email"]
+    password = data["password"]
+    return user.login(email, password, mongo)
+
 app.run()
