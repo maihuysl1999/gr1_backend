@@ -4,6 +4,8 @@ from flask_pymongo import PyMongo
 
 import controller.user as user
 import re
+
+import middlewares.AuthMiddleware as middleWare
  
 # Make a regular expression
 # for validating an Email
@@ -57,4 +59,20 @@ def login():
     password = data["password"]
     return user.login(email, password, mongo)
 
+@app.route('/v0/add_groups', methods=['POST'])
+def add_groups():
+    data = request.get_json()
+    if (not "email" in data) or (not re.search(regex, data["email"])) :
+        return jsonify(status = 500, 
+        msg = "Please enter a valid email" )
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return jsonify(status = 200, 
+                msg = "hello" )
+    except Exception as e:
+        return jsonify(status = 500, 
+                error = e )
 app.run()
