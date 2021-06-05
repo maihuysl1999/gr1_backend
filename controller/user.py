@@ -15,7 +15,7 @@ def sign_up( _name, _email, _password, _role, mongo):
         "name": _name,
         "email": _email,
         "password": _password,
-        "role": _role,
+        "role": str(_role),
         "address": "0xe4680B5B373b9353AF87De622a6E410E067a25c9",
         "private_key":
           "ef0be3ad9cf6ab09b1aaca99e1880546e4ca82e159a590291d0ec67e5929d0cf",
@@ -45,12 +45,13 @@ def login(_email, _password, mongo):
         return jsonify(status = 500, 
                 error = e )
 
-def getListGroup(_userid, mongo):
+def getListGroup(data, _userid, mongo):
     try:
         user_collection = mongo.db.users
         group_collection = mongo.db.groups
+        id_bagri = data["id_bgri"]
         items = []
-        result = group_collection.find({"parent_id" : ObjectId(_userid)})
+        result = group_collection.find({"parent_id" : ObjectId(_userid), "id_bagri" : id_bagri})
         if not result :
             return jsonify(status = 500,
                 items = items)
@@ -66,13 +67,18 @@ def getListGroup(_userid, mongo):
         print (e)
         return jsonify(status = 500, 
                 error = e )
+        
+    except Exception as e:
+        print (e)
+        return jsonify(status = 500, 
+                error = e )
 
-def addGroup(_email, _namegroup, _userid,mongo):
+def addGroup(data, _userid,mongo):
     try:
         user_collection = mongo.db.users
         group_collection = mongo.db.groups
-        getUserById = user_collection.find_one({"email": _email})
-        if not getUserById or getUserById["role"] != 2: 
+        getUserById = user_collection.find_one({"email": data["email"]})
+        if not getUserById or getUserById["role"] != '2': 
             return jsonify(status = 500, 
                 msg = "email not found or is not intergroup")
         checkExistGroups =  group_collection.find_one({"user_id" : getUserById["_id"]})
@@ -82,12 +88,46 @@ def addGroup(_email, _namegroup, _userid,mongo):
         data = {
             "user_id" : getUserById["_id"],
             "parent_id" : ObjectId(_userid),
-            "name_group" : _namegroup
+            "id_bagri" : data["id_bgri"],
+            "name_group" : data["name"]
         }
         result = group_collection.insert(data)
         temp = str(result)
         return jsonify(status = 200, 
             result = temp)
+        
+    except Exception as e:
+        return jsonify(status = 500, 
+                error = e )
+
+def getListBgri(_userid, mongo):
+    try:
+        bagri_collection = mongo.db.bagris
+        items = []
+        result = bagri_collection.find({"user_id" : ObjectId(_userid)})
+        if not result :
+            return jsonify(status = 500,
+                items = items)
+        for document in result: 
+            temp = {
+                "name" : document["name"],
+                "id" : document["id"]
+            }
+            items.append(temp)
+        return jsonify(status = 200, items = items)
+        
+    except Exception as e:
+        print (e)
+        return jsonify(status = 500, 
+                error = e )
+
+def addHouseHold(data, mongo):
+    try:
+        user_collection = mongo.db.users
+        data = request.get_json()
+        print(data)
+        return jsonify(status = 200, 
+            result = data)
         
     except Exception as e:
         return jsonify(status = 500, 
