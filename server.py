@@ -1,27 +1,24 @@
 import flask 
 from flask import request, jsonify
 from flask_pymongo import PyMongo
+from web3 import method
 from werkzeug.datastructures import auth_property
 from werkzeug.wrappers import response
-
-
 import controller.user as user
 import controller.product as product
-
+import common.Constant as constant
 import controller.setblockchain as setblc
+from controller.Get import Handler1 as get
 
 # some_file.py
 import sys
 # # insert at 1, 0 is the script path (or '' in REPL)
-sys.path.insert(1, 'D:\\GR1\\bagri_sdk')
+sys.path.insert(1, 'D:\\gr1_backend\\bagri_sdk')
 
-import py_handler
-from py_handler import Handler
+from bagri_sdk.py_handler import Handler as handler
 
-handler = Handler()
 
- 
-
+#handler = Handler()
 import re
 
 import middlewares.AuthMiddleware as middleWare
@@ -186,7 +183,89 @@ def getListProduct():
         return jsonify(status = 500, 
                 error = e )
 
+@app.route('/v0/get_product', methods = ['GET'])
+def getProduct():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getproduct(auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
 
+@app.route('/v0/get_history', methods = ['GET'])
+def getHistory():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getHistory(auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
 
+@app.route('/v0/get_qr_code', methods = ['GET'])
+def getqrcode():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getqrcode(auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/get_list_msg', methods = ['GET'])
+def getlistmsg():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getListMsg(auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/get_msg_action_for_farmer', methods =['GET'])
+def get_msg_action_for_farmer():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getMsgActionForFarmer(auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+                
+@app.route('/v0/set_qr_code', methods = ['POST'])
+def setqrcode():
+    data = request.get_json()
+    if (not "action_name" in data) or (not re.search(regex, data["action_name"])) :
+        return jsonify(status = 500, 
+        msg = "action_name không tồn tại" )
+    if (not "description" in data) or (not re.search(regex, data["description"])) :
+        return jsonify(status = 500, 
+        msg = "description không tồn tại" )
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setQrCode(data,auth, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
 
 app.run()
