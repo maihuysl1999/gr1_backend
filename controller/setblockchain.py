@@ -4,6 +4,8 @@ from bson.objectid import ObjectId
 
 from flask.json import jsonify
 
+import datetime
+
 def setBagri(data,userid, mongo, handler):
     try: 
         user_collection = mongo.db.users
@@ -27,6 +29,30 @@ def setBagri(data,userid, mongo, handler):
         })
         return jsonify(status = 200, msg= "thanh cong")
 
+    except Exception as e: 
+        print(e)
+        return jsonify(status = 500, error = e)
+
+def setProduct(product_id, userid, data, mongo, handler ):
+    try: 
+        group_collection = mongo.db.groups
+        products_collection = mongo.db.products
+        result = group_collection.find_one({"user_id" : ObjectId(userid)})
+        if not result : 
+            return jsonify(status =  500, msg =  "Bạn không phải là quản lý của group nào")
+        Info = data["dataInfo"]
+        now = datetime.datetime.now()
+        arr_action = []
+        result1 = handler.create_product(product_id, Info[1], Info[3], Info[2], "", "0", str(now), [], [], [], arr_action,result["id_bagri"])
+        print(result1)
+        filter = { 'product_id': product_id }
+        
+        # Values to be updated.
+        newvalues = { "$set": { 'address_contract': result1 } } 
+        
+        # Using update_one() method for single updation.
+        products_collection.update_one(filter, newvalues) 
+        return jsonify (status =  200)
     except Exception as e: 
         print(e)
         return jsonify(status = 500, error = e)

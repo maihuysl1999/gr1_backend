@@ -1,8 +1,10 @@
+from typing import ItemsView
 from flask import request, jsonify
 import json
 import helpers.jwt_helper as jwtHelper
 import common.Constant as constant
 from bson.objectid import ObjectId
+
 
 def sign_up( _name, _email, _password, _role, mongo):
     user_collection = mongo.db.users
@@ -121,14 +123,53 @@ def getListBgri(_userid, mongo):
         return jsonify(status = 500, 
                 error = e )
 
-def addHouseHold(data, mongo):
+def addHouseHold(data, userid, mongo):
     try:
         user_collection = mongo.db.users
-        data = request.get_json()
-        print(data)
+        product_collection = mongo.db.products
+        households_collection = mongo.db.households
+        email = data["email"]
+        product_id = data["contract_id"]
+        getUserById = user_collection.find_one({"_id" : ObjectId(userid)})
+        if (getUserById["role"] != "2"):
+            return jsonify(status = 500, msg = "you need permission")
+        getProductByUserId = product_collection.find_one({"_id" : ObjectId(product_id)})
+        if not getProductByUserId : 
+            return jsonify(status = 500, msg = "can't find product")
+        getUserByEmail = user_collection.find_one({"email" : email})
+        if (not getUserByEmail ) or (getUserByEmail["role"] != '3') :
+            return jsonify(status = 500, 
+                msg = "Cant find email or email is not households")
+        checkExitsGroups = households_collection.find_one({"user_id": getUserByEmail["_id"], "product_id": ObjectId(product_id)})
+        if checkExitsGroups : 
+            return jsonify(status = 500, msg = "Email already exists in the household")
+        data = {
+            "user_id" : getUserByEmail["_id"],
+            "parent_group_id" : ObjectId(userid),
+            "product_id" : ObjectId(product_id)
+        }
+        households_collection.insert(data)
+        
         return jsonify(status = 200, 
-            result = data)
+            result = 0)
         
     except Exception as e:
         return jsonify(status = 500, 
                 error = e )
+
+def getListHouseHolds(useid, _idproduct, mongo):
+    try: 
+        households_collection = mongo.db.households
+        user_collection = mongo.db.users
+        result = households_collection.find({"product_id" : ObjectId(_idproduct), "parent_group_id" : ObjectId(useid)})
+        items = []
+        if not result : 
+            return jsonify(status = 200, items = items)
+        for document in result:
+            getInfoUser = user_collection.find_one({"_id" : document["user_id"]})
+            temp = str(getInfoUser["_id"])
+            getInfoUser["_id"] = temp
+            items.append(getInfoUser)
+        return jsonify(status = 200, items = items)
+    except Exception as e: 
+        return jsonify(status = 500, msg = e)

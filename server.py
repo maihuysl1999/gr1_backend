@@ -150,7 +150,7 @@ def get_list_bgri():
         return jsonify(status = 500, 
                 error = e )
 
-
+#------------------------------------------------------------------
 
 #quan ly nhom : role = 2 
 @app.route('/v0/add_households', methods=['POST'])
@@ -164,7 +164,7 @@ def add_households():
         if isinstance(auth, dict) :
             return jsonify(status = auth["status"], 
                 msg = auth["msg"])
-        return user.addHouseHold(data, mongo)
+        return user.addHouseHold(data, auth, mongo)
         # print(auth)
         # return jsonify(status = 500, 
         #     msg = "Please enter a valid password." )
@@ -186,7 +186,47 @@ def getListProduct():
         return jsonify(status = 500, 
                 error = e )
 
+@app.route('/v0/get_tieu_chuan_vietgap', methods=['GET'])
+def getVietGap():
+    try : 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getVietGap()
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
 
+@app.route('/v0/deploy_contracts_vietgap', methods=['POST'])
+def create_product():
+    try: 
+        data = request.get_json()
+        print(data)
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.createProduct(data, auth, mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/<id>/<contract_id>/get_list_households', methods=['GET'])
+def getListHouseHolds(id, contract_id):
+    try: 
+        print(id + "---" + contract_id)
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return user.getListHouseHolds(id, contract_id,mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )     
 
 
 app.run()
