@@ -25,6 +25,7 @@ def sign_up( _name, _email, _password, _role, mongo):
     print("true")
     return jsonify(status = 200,
         message = "thanh cong" )
+
 def login(_email, _password, mongo):
     try:
         user_collection = mongo.db.users

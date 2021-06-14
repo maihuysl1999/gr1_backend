@@ -1,3 +1,4 @@
+from logging import error
 import flask 
 from flask import request, jsonify
 from flask_pymongo import PyMongo
@@ -228,5 +229,99 @@ def getListHouseHolds(id, contract_id):
         return jsonify(status = 500, 
                 error = e )     
 
+@app.route('/v0/<address_contract>/get_product', methods=['GET'])
+def getProduct(address_contract):
+    if not address_contract: 
+        return jsonify(status = 500, msg= "tx hash is not empty" )
+    try: 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getProduct(address_contract, auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )     
+
+@app.route('/v0/write_product', methods=['POST'])
+def editProduct():
+    try:
+        data = request.get_json()
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.editProduct(data, auth, mongo, handler)
+    except Exception as e: 
+        print(e)
+        return jsonify(status = 500, error = e)
+
+@app.route('/v0/send_yeu_cau_verify', methods=['POST'])
+def verifyProduct():
+    try:
+        data = request.get_json()
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.sendVerifyProduct(data, auth, mongo)
+    except Exception as e: 
+        print(e)
+        return jsonify(status = 500, error = e)
+
+@app.route('/v0/set_verify_contract', methods=['POST'])
+def setVerifyProduct():
+    try:
+        data = request.get_json()
+        print(data)
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setVerifyProduct(data, auth, mongo)
+    except Exception as e: 
+        print(e)
+        return jsonify(status = 500, error = e)
+
+@app.route('/v0/get_list_msg', methods=['GET'])
+def getListMsg():
+    try:
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getListMsg(auth, mongo)
+    except Exception as e: 
+        print(e)
+        return jsonify(status = 500, error = e)
+
+@app.route('/v0/reject', methods=['POST'])
+def rejectVerify():
+    try:
+        data = request.get_json()
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.rejectVerify(data, mongo)
+    except Exception as e: 
+        print(e)
+        return jsonify(status = 500, error = e)
+
+@app.route('/v0/<address_contract>/get_qr_code', methods=['GET'])
+def getListAction(address_contract):
+    if not address_contract: 
+        return jsonify(status = 500, msg= "tx hash is not empty" )
+    try: 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getListAction(address_contract, auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
 
 app.run()

@@ -33,7 +33,7 @@ def setBagri(data,userid, mongo, handler):
         print(e)
         return jsonify(status = 500, error = e)
 
-def setProduct(product_id, userid, data, mongo, handler ):
+def initProduct(product_id, userid, data, mongo, handler ):
     try: 
         group_collection = mongo.db.groups
         products_collection = mongo.db.products
@@ -41,14 +41,23 @@ def setProduct(product_id, userid, data, mongo, handler ):
         if not result : 
             return jsonify(status =  500, msg =  "Bạn không phải là quản lý của group nào")
         Info = data["dataInfo"]
+        genusid = uuid.uuid1()
+        waterid = uuid.uuid1()
+        soilid = uuid.uuid1()
         now = datetime.datetime.now()
         arr_action = []
-        result1 = handler.create_product(product_id, Info[1], Info[3], Info[2], "", "0", str(now), [], [], [], arr_action,result["id_bagri"])
-        print(result1)
+        result1 = handler.create_product(product_id, Info[1], Info[3], Info[2], "", "0", str(now), [str(genusid)], [str(waterid)], [str(soilid)], arr_action,result["id_bagri"])
+        print("product: " + result1)
+        result2 = handler.get_bagri(result["id_bagri"])
+        print(result2)
+        arr_product = result2[5]
+        arr_product.append(product_id)
+        result3 = handler.create_bagri(result2[0], result2[1],result2[2], result2[3],result2[4], arr_product)
+        print("bagri: " + result3)
         filter = { 'product_id': product_id }
         
         # Values to be updated.
-        newvalues = { "$set": { 'address_contract': result1 } } 
+        newvalues = { "$set": { 'address_contract': result1, 'genus_id' : str(genusid), 'water_id' : str(waterid),'soil_id' : str(soilid)}} 
         
         # Using update_one() method for single updation.
         products_collection.update_one(filter, newvalues) 
@@ -56,3 +65,70 @@ def setProduct(product_id, userid, data, mongo, handler ):
     except Exception as e: 
         print(e)
         return jsonify(status = 500, error = e)
+
+def setProduct(product_id, data, mongo, handler) :
+    try: 
+        product_collection = mongo.db.products
+        now = datetime.datetime.now()
+        
+        temp = handler.get_product(product_id)
+        result = handler.create_product(product_id, data[0], data[1], data[2],"", "0", temp[6], temp[7], temp[8], temp[9], temp[10], temp[11])
+        print("setproduct: " + result)
+        filter = { 'product_id': product_id }
+        
+        # Values to be updated.
+        newvalues = { "$set": { 'data_info': data }} 
+        product_collection.update_one(filter, newvalues) 
+        return True
+        
+    except Exception as e: 
+        print(e)
+        return False
+
+def setSoil(soid_id, data, product_id, handler) :
+    try: 
+        now = datetime.datetime.now()
+        temp = handler.get_soil(soid_id)
+        if temp[0] == "":
+            result = handler.create_soil(soid_id, data[0], data[1], data[2], data[3],str(now), "", product_id)
+            print("setsoil: " + result)
+            return True
+        else :
+            result = handler.create_soil(soid_id, data[0], data[1], data[2], data[3],temp[5], str(now), product_id)
+            print("setsoil: " + result)
+            return True
+    except Exception as e: 
+        print(e)
+        return False
+
+def setWater(water_id, data, product_id, handler) :
+    try: 
+        now = datetime.datetime.now()
+        temp = handler.get_water(water_id)
+        if temp[0] == "":
+            result = handler.create_water(water_id, data[0], data[1], data[2], data[3],str(now), "", product_id)
+            print("setwater: " +result)
+            return True
+        else :
+            result = handler.create_water(water_id, data[0], data[1], data[2], data[3],temp[5], str(now), product_id)
+            print("setwater: " +result)
+            return True
+    except Exception as e: 
+        print(e)
+        return False
+
+def setGenus(genus_id, data, product_id, handler) :
+    try: 
+        now = datetime.datetime.now()
+        temp = handler.get_genus(genus_id)
+        if temp[0] == "":
+            result = handler.create_genus(genus_id, data[0], data[1], data[2],str(now), "", product_id)
+            print("setgenus: " +result)
+            return True
+        else :
+            result = handler.create_genus(genus_id, data[0], data[1], data[2],temp[4], str(now), product_id)
+            print("setgenus: " +result)
+            return True
+    except Exception as e: 
+        print(e)
+        return False
