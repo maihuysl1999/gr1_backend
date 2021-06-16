@@ -132,3 +132,15 @@ def setGenus(genus_id, data, product_id, handler) :
     except Exception as e: 
         print(e)
         return False
+def setaction(action_id, data, product_id, handler) : 
+    try:
+        arr_history = []
+        action_name = data["name"]
+        time = data["time"]
+        description = data["description"]
+        result = handler.create_action(action_id, action_name, time, description, product_id, arr_history)
+        print("set action: "+result) 
+        return True
+    except Exception as e: 
+        print(e)
+        return False

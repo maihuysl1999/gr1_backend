@@ -6,9 +6,8 @@ from werkzeug.datastructures import auth_property
 from werkzeug.wrappers import response
 
 
-import controller.user as user
 import controller.product as product
-
+import controller.user as user
 import controller.setblockchain as setblc
 
 # some_file.py
@@ -16,10 +15,10 @@ import sys
 # # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, 'D:\\GR1\\bagri_sdk')
 
-import py_handler
-from py_handler import Handler
+#import py_handler
+from bagri_sdk.py_handler import Handler as handler
 
-handler = Handler()
+#handler = Handler()
 
  
 
@@ -324,4 +323,75 @@ def getListAction(address_contract):
         return jsonify(status = 500, 
                 error = e ) 
 
+@app.route('/v0/set_qr_code', methods = ['POST'])
+def setaction():
+    try:
+        data = request.get_json()
+        print(data)
+        if (not "action_name" in data) or (not re.search(regex, data["action_name"])) :
+            return jsonify(status = 500, 
+            msg = "Action_name khong ton tai!" )
+        if (not "description" in data) or (not re.search(regex, data["description"])) :
+            return jsonify(status = 500, 
+            msg = "description khong ton tai!" )
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setaction(data, auth, mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+        
+@app.route('/v0/set_status_msg_action', methods = ['POST'])
+def setsttmsg():
+    try:
+        data = request.get_json()
+        if (not "msg_action_id" in data) or (not re.search(regex, data["msg_action_id"])) :
+            return jsonify(status = 500, 
+            msg = "msg_action_id khong ton tai!" )
+        if (not "status" in data) or (not re.search(regex, data["status"])) :
+            return jsonify(status = 500, 
+            msg = "status khong ton tai!" )
+        return product.setStatusMsgAaction(data, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+        
+@app.route('/v0/<address_contract>/get_msg_action_for_farmer', methods=['GET'])
+def getmsgaction4farm(address_contract):
+    if not address_contract: 
+        return jsonify(status = 500, msg= "tx hash is not empty" )
+    try: 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getMsgActionForFarmer(address_contract, auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
+        
+@app.route('/v0/change', methods = ['POST'])
+def change():
+    try:
+        data = request.get_json()
+        if (not "msg_id" in data) or (not re.search(regex, data["msg_id"])) :
+            return jsonify(status = 500, 
+            msg = "msg_id khong ton tai!" )
+        if (not "status" in data) or (not re.search(regex, data["status"])) :
+            return jsonify(status = 500, 
+            msg = "status khong ton tai!" )
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.change(data, auth, mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
 app.run()

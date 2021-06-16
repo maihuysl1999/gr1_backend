@@ -387,4 +387,94 @@ def getListAction(tx_hash, userId, mongo, handler):
         if len(arr_action) == 0: 
             return jsonify(status = 200, items = items)
     except Exception as e: 
-        return jsonify(status = 500, error = e)        
+        return jsonify(status = 500, error = e)  
+
+def setaction( data, userid, mongo, handler):
+    try:
+        action_name = data["action_name"]
+        description = data["description"]
+        address_contract = data["address_contract"]
+        user_collection = mongo.db.users
+        product_collection = mongo.db.products
+        household_collection = mongo.db.households
+        contract_collection = mongo.db.contracts
+        msgaction_collection = mongo.db.msg_actions
+        
+        getContractByAddressContract = contract_collection.find_one({"address_contract": address_contract})
+        getInfodUserById = user_collection.find_one({"_id" : ObjectId(userid)})
+        role = getInfodUserById["role"]
+        getProduct = product_collection.find_one({"address_contract" : address_contract})
+        
+        product_id = getProduct["product_id"]
+        id = uuid.uuid1()
+        if (role != constant.Constant["Group"]):
+            return jsonify(status = 500, msg=" Ban khong cos quyen tao action!")
+        getAllHousehold = household_collection.find({"parent_group_id": userid, "contract_id": getContractByAddressContract["_id"]})
+        for i in range(0, len(getAllHousehold)):
+            data_insert={
+                "user_id": userid,
+                "user_id_household": getAllHousehold[i]["user_id"],
+                "status":0,
+                "address_contract": address_contract,
+                "data": ""
+            }
+            msgaction_collection.insert(data_insert)
+        set_action = setblc.setaction(str(id), data, product_id, handler)
+        return jsonify(status=200, msg="Tao Action thanh cong")
+    except Exception as e: 
+        return jsonify(status = 500, error = e) 
+
+def setStatusMsgAaction(data, mongo):
+    try:
+        msgActionId = data["msg_action_id"]
+        status = data["status"]
+        datas = data["data"]
+        
+        user_collection = mongo.db.users
+        product_collection = mongo.db.products
+        household_collection = mongo.db.households
+        contract_collection = mongo.db.contracts
+        msgaction_collection = mongo.db.msg_actions
+        
+        #getInfodUserById = user_collection.find_one({"_id" : ObjectId(userid)})
+        if datas:
+            msgaction_collection.update_one({"_id": msgActionId},
+                                            {"$set": {"status": status, "data": datas}})
+        else:
+            update = msgaction_collection.update_one({"_id": msgActionId},
+                                            {"$set": {"status": status}})
+        return jsonify(status = 200, msg = "update thanh cong")
+    except Exception as e: 
+        return jsonify(status = 500, error = e)   
+    
+def getMsgActionForFarmer(tx_hash, userid, mongo, handler):
+    try:
+        address_contract = tx_hash
+        msgaction_collection = mongo.db.msg_actions
+        user_collection = mongo.db.users
+        
+        getInfodUserById = user_collection.find_one({"_id" : ObjectId(userid)})
+        get_msg_action = msgaction_collection.find({"user_id_household": userid,
+                                                    "address_contract": address_contract})
+        return jsonify(status= 200, items = get_msg_action)
+    except Exception as e: 
+        return jsonify(status = 500, error = e) 
+
+def change(data, userid, mongo, handler) :
+    try:
+        msgId = data["msg_id"]
+        status = data["status"]
+        
+        user_collection = mongo.db.users
+        msg_collection = mongo.db.msg
+        
+        getInfodUserById = user_collection.find_one({"_id" : ObjectId(userid)})
+        role = getInfodUserById["role"]
+        
+        if role != constant.Constant["LienGroup"]:
+            return jsonify(status = 500, msg="Bạn không có quyền , chỉ liên nhóm mới có thể get msg")
+        updateContract = msg_collection.update_one({"_id":msgId}, 
+                                                   {"$set": {"status": status}})
+        return jsonify(status=200, msg="update thanh cong!")
+    except Exception as e: 
+        return jsonify(status = 500, error = e) 
