@@ -132,3 +132,48 @@ def setGenus(genus_id, data, product_id, handler) :
     except Exception as e: 
         print(e)
         return False
+
+def setAction(action_id, data, product_id, handler) : 
+    try:
+        arr_history = []
+        action_name = data["action_name"]
+        time = datetime.datetime.now()
+        description = data["description"]
+        result = handler.create_action(action_id, action_name, str(time), description, product_id, arr_history)
+        print("set action: "+ result) 
+        result2 = handler.get_product(product_id)
+        print(result2)
+        arr_action = result2[10]
+        arr_action.append(action_id)
+        result3 = handler.create_product(result2[0], result2[1],result2[2], result2[3],result2[4], result2[5], result2[6], result2[7], result2[8], result2[9], arr_action, result2[11])
+        print("setproduct:" + result3)
+        return True
+    except Exception as e: 
+        print(e)
+        return False
+
+def setHistory(id,action_id, farmer_email, time, handler) : 
+    try:
+        result = handler.create_history(str(id), str(time), farmer_email, "",action_id)
+        print("set history: "+ result) 
+        result2 = handler.get_action(action_id)
+        print(result2)
+        arr_history = result2[5]
+        arr_history.append(str(id))
+        result3 = handler.create_action(result2[0], result2[1], result2[2], result2[3], result2[4], arr_history)
+        print("set action:" + result3)
+        return {"tx_hash_history" : result, "msg" : True}
+    except Exception as e: 
+        print(e)
+        return {"msg" : False}
+
+def setResult(product_id, result, handler) :
+    try:        
+        temp = handler.get_product(product_id)
+        result = handler.create_product(product_id, temp[1], temp[2], temp[3],temp[4], result, temp[6], temp[7], temp[8], temp[9], temp[10], temp[11])
+        print("setResult: " + result)
+        return True
+        
+    except Exception as e: 
+        print(e)
+        return False

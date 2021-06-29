@@ -1,8 +1,8 @@
 from os import error
 
-def getGenos(idGenos, handler) :
+def getGenus(idGenus, handler) :
     try: 
-        result = handler.get_genus(idGenos)
+        result = handler.get_genus(idGenus)
         print(result)
         return result
     except Exception as e: 
@@ -15,9 +15,9 @@ def getWater(idWater, handler) :
     except Exception as e: 
         return e
 
-def getSoid(idSoid, handler) :
+def getSoil(idSoil, handler) :
     try: 
-        result = handler.get_soid(idSoid)
+        result = handler.get_soil(idSoil)
         return result
     except Exception as e: 
         return e       
@@ -26,5 +26,26 @@ def getListAction(idProduct, handler):
     try: 
         result = handler.get_product(idProduct)
         return result[10]
+    except Exception as e: 
+        return e 
+
+def getAction(idAction, handler): 
+    try: 
+        result = handler.get_action(idAction)
+        return result
+    except Exception as e: 
+        return e 
+
+def getHistory(idHistory, handler): 
+    try: 
+        result = handler.get_history(idHistory)
+        return result
+    except Exception as e: 
+        return e 
+
+def getProduct(idProduct, handler): 
+    try: 
+        result = handler.get_product(idProduct)
+        return result
     except Exception as e: 
         return e 

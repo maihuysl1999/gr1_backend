@@ -324,4 +324,147 @@ def getListAction(address_contract):
         return jsonify(status = 500, 
                 error = e ) 
 
+@app.route('/v0/set_qr_code', methods = ['POST'])
+def setAction():
+    try:
+        data = request.get_json()
+        if (not "action_name" in data)  :
+            return jsonify(status = 500, 
+            msg = "Action_name khong ton tai!" )
+        if (not "description" in data) :
+            return jsonify(status = 500, 
+            msg = "description khong ton tai!" )
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setAction(data, auth, mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/<address_contract>/<key>/get_one_qr_code', methods=['GET'])
+def getAction(address_contract, key):
+    if not address_contract: 
+        return jsonify(status = 500, msg= "tx hash is not empty" )
+    if not key: 
+        return jsonify(status = 500, msg= "action id is not empty" )
+    try: 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getAction(address_contract, key,auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
+
+@app.route('/v0/<address_contract>/get_msg_action_for_farmer', methods=['GET'])
+def getMsgActionForFarmer(address_contract):
+    if not address_contract: 
+        return jsonify(status = 500, msg= "tx hash is not empty" )
+    try: 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getMsgActionForFarmer(address_contract,auth,mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
+
+@app.route('/v0/set_status_msg_action', methods=['POST'])
+def setStatusAction(): 
+    try: 
+        data = request.get_json()
+        if not "address_contract" in data: 
+            return jsonify(status = 500, msg = "address_contract is not empty")
+        if not "msg_action_id" in data: 
+            return jsonify(status = 500, msg = "msg_action_id is not empty")
+        if not "status" in data: 
+            return jsonify(status = 500, msg = "status is not empty")
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setStatusAction(data, mongo)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/set_history', methods=['POST'])
+def setHistory(): 
+    try: 
+        data = request.get_json()
+        if not "address_contract" in data: 
+            return jsonify(status = 500, msg = "address_contract is not empty")
+        if not "msg_action_id" in data: 
+            return jsonify(status = 500, msg = "msg_action_id is not empty")
+        if not "key_qrcode" in data: 
+            return jsonify(status = 500, msg = "key_qrcode is not empty")
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setHistory(data,auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/<address_contract>/get_history', methods=['GET'])
+def getHistory(address_contract):
+    if not address_contract: 
+        return jsonify(status = 500, msg= "tx hash is not empty" )
+    try: 
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getHistory(address_contract,auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e )
+
+@app.route('/v0/thong_ke', methods=['POST'])
+def getAllInfo(): 
+    try: 
+        data = request.get_json()        
+        if not "address_contract" in data: 
+            return jsonify(status = 500, msg = "address_contract is not empty")
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.getAllInfo(data,auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
+
+@app.route('/v0/set_end_smartcontract', methods=['POST'])
+def setResultProduct(): 
+    try: 
+        data = request.get_json()
+        print(data)  
+        if not "msg_id" in data: 
+            return jsonify(status = 500, msg = "msg_id is not empty")
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.setResultProduct(data,auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
+
+
+
+
 app.run()
