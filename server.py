@@ -464,7 +464,22 @@ def setResultProduct():
         return jsonify(status = 500, 
                 error = e ) 
 
+@app.route('/v0/product/delete', methods=['POST'])
+def deleteProduct(): 
+    try: 
+        data = request.get_json()
+        print(data)  
+        if not "product_id" in data: 
+            return jsonify(status = 500, msg = "product_id is not empty")
+        auth = middleWare.isAuth(request, mongo)
+        if isinstance(auth, dict) :
+            return jsonify(status = auth["status"], 
+                msg = auth["msg"])
+        return product.deleteProduct(data,auth,mongo, handler)
+    except Exception as e:
+        print(e)
+        return jsonify(status = 500, 
+                error = e ) 
 
 
-
-app.run()
+app.run(host="0.0.0.0")
